@@ -11,12 +11,12 @@ int main(void) {
     while (getline(&str, &n, stdin) != -1) {
         printf("%s", str);
     }
-    if (errno != 0) {
-        printf("%s\n", strerror(errno));
-        free(str);
-        return 1;
-    }
 
     free(str);
+
+    if (errno != 0) {
+        fprintf(stderr, "%s\n", strerror(errno));
+        return 1;
+    }
     return 0;
 }
