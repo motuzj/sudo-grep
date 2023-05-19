@@ -6,21 +6,34 @@
 
 // prints only lines that contain "word"
 int print_line_with_word(char *word, char *line) {
-    char *p_word; // storing pointer to "word"
+    char *p_word = line; // storing pointer to "word"
+    int printed = 0;
 
-    if ((p_word = strstr(line, word)) != NULL) {
-        if (isatty(STDOUT_FILENO)) { // if stdout is terminal
-            int position = p_word - line;
-
-            for (int i = 0; i < strlen(line); i++) {
-                if (i >= position && i <= position + strlen(word) - 1) {
-                    printf("\033[32m%c\033[0m", line[i]);
-                } else {
-                    printf("%c", line[i]);
-                }
-            }
-        } else {
+    while ((p_word = strstr(p_word, word)) != NULL) {
+        if (!isatty(STDOUT_FILENO) || !strcmp(word, "")) { // if stdout is terminal or "word" is empty
             printf("%s", line);
+            return 0;
+        }
+        int position = p_word - line;
+
+        // print characters before "word"
+        for (int i = printed; i < position; i++) {
+            printf("%c", line[i]);
+        }
+
+        printf("\033[32m"); // set green color
+        for (int i = position; i < position + strlen(word); i++) {
+            printf("%c", line[i]); // print word
+        }
+        printf("\033[0m"); // reset color
+
+        printed = position + strlen(word);
+        p_word += strlen(word);
+    }
+    if (printed) {
+        // print remaining characters
+        for (int i = printed; i < strlen(line); i++) {
+            printf("%c", line[i]);
         }
     }
     return 0;
