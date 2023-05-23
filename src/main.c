@@ -5,10 +5,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <bits/getopt_core.h>
 #include <errno.h>
 
-bool IGNORE_CASE;
+bool IGNORE_CASE = false;
 
 // prints only lines that contain "word"
 int print_line_with_word(const char *word, const char *line, int is_tty) {
