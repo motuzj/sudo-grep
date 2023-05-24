@@ -1,0 +1,2 @@
+search one word + ignore case + invert match
+--ignore-case --invert-match "n"

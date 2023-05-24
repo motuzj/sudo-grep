@@ -1,14 +1,16 @@
 #define _GNU_SOURCE
+#include <ctype.h>
+#include <errno.h>
+#include <getopt.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
-#include <ctype.h>
 #include <unistd.h>
-#include <errno.h>
 
 // options
 bool ignore_case = false;
+bool invert_match = false;
 
 // prints only lines that contain "word"
 int print_line_with_word(const char *word, const char *line, int is_tty) {
@@ -22,7 +24,7 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
             found_word = strstr(search_start, word);
         }
 
-        if (found_word) {
+        if (found_word && !invert_match) {
             found_cnt++;
             for (; search_start < found_word; search_start++) {
                 printf("%c", *search_start);
@@ -37,6 +39,9 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
                 printf("\033[0m"); // reset color
             }
             search_start += strlen(word);
+        } else if (!found_word && invert_match) {
+            printf("%s", line);
+            break;
         } else {
             break;
         }
@@ -49,12 +54,20 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
 }
 
 int main(int argc, char *argv[]) {
+    // clang-format off
+    struct option long_options[] = {
+        {"invert-match", no_argument, 0, 'v'}, 
+        {"ignore-case", no_argument, 0, 'i'}
+    };
+    // clang-format on
     int opt;
-    while ((opt = getopt(argc, argv, "i")) != -1) {
+    while ((opt = getopt_long(argc, argv, "iv", long_options, NULL)) != -1) {
         switch (opt) {
             case 'i':
                 ignore_case = true;
                 break;
+            case 'v':
+                invert_match = true;
         }
     }
 
