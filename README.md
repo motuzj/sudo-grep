@@ -4,7 +4,8 @@
 
 The following options are available for `sudo-grep`:
 
-- `-i`: Ignore case in pattern and input data.
+- `-i` / `--ignore-case`: Ignore case in pattern and input data.
+- `-v` / `--invert-match`: Invert the sense of matching, to select non-matching lines.
 
 ## Building
 
