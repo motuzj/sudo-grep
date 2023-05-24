@@ -7,7 +7,8 @@
 #include <unistd.h>
 #include <errno.h>
 
-bool IGNORE_CASE = false;
+// options
+bool ignore_case = false;
 
 // prints only lines that contain "word"
 int print_line_with_word(const char *word, const char *line, int is_tty) {
@@ -15,7 +16,7 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
     const char *search_start = line; // storing pointer to "word"
     while (search_start && *search_start) {
         const char *found_word;
-        if (IGNORE_CASE) {
+        if (ignore_case) {
             found_word = strcasestr(search_start, word);
         } else {
             found_word = strstr(search_start, word);
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "i")) != -1) {
         switch (opt) {
             case 'i':
-                IGNORE_CASE = true;
+                ignore_case = true;
                 break;
         }
     }

@@ -1,3 +1,2 @@
 multiple words search + ignore case
-ipsum dolor
--i
+-i "ipsum dolor"
