@@ -54,6 +54,8 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
 }
 
 int main(int argc, char *argv[]) {
+    int is_tty = isatty(STDOUT_FILENO);
+
     // clang-format off
     struct option long_options[] = {
         {"invert-match", no_argument, 0, 'v'}, 
@@ -79,9 +81,26 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // read from files provided in arguments
+    if (argv[optind + 1] != NULL) {
+        for (int i = optind + 1; argv[i] != NULL; i++) {
+            FILE *file = fopen(argv[i], "r");
+            if (file == NULL) {
+                fprintf(stderr, "Error: %s: File can't be opened\n", argv[i]);
+                continue;
+            }
+
+            char line[1000];
+            while (fgets(line, sizeof(line), file) != NULL) {
+                print_line_with_word(word, line, is_tty);
+            }
+            fclose(file);
+        }
+        return 0;
+    }
+
     char *str = NULL;
     size_t n = 0;
-    int is_tty = isatty(STDOUT_FILENO);
     errno = 0;
 
     while (getline(&str, &n, stdin) != -1) {

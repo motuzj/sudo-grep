@@ -1,5 +1,9 @@
 # sudo-grep
 
+```shell
+sudo-grep [OPTION]... PATTERNS [FILE]...
+```
+
 ## Options
 
 The following options are available for `sudo-grep`:
