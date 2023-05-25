@@ -53,9 +53,23 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
     return 0;
 }
 
-int main(int argc, char *argv[]) {
+int grep_file(const char *word, FILE *file) {
     int is_tty = isatty(STDOUT_FILENO);
+    char *line = NULL;
+    size_t n = 0;
+    errno = 0;
 
+    while (getline(&line, &n, file) != -1) {
+        if (errno != 0) {
+            fprintf(stderr, "Error: %s\n", strerror(errno));
+            break;
+        }
+        print_line_with_word(word, line, is_tty);
+    }
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
     // clang-format off
     struct option long_options[] = {
         {"invert-match", no_argument, 0, 'v'}, 
@@ -90,33 +104,10 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            errno = 0;
-            char *line = NULL;
-            size_t n = 0;
-            while (getline(&line, &n, file) != -1) {
-                if (errno != 0) {
-                    fprintf(stderr, "Error: %s\n", strerror(errno));
-                    break;
-                }
-                print_line_with_word(word, line, is_tty);
-            }
-            fclose(file);
+            grep_file(word, file);
         }
-        return 0;
+    } else {
+        grep_file(word, stdin);
     }
-
-    char *str = NULL;
-    size_t n = 0;
-    errno = 0;
-
-    while (getline(&str, &n, stdin) != -1) {
-        if (errno != 0) {
-            fprintf(stderr, "Error: %s\n", strerror(errno));
-            break;
-        }
-        print_line_with_word(word, str, is_tty);
-    }
-
-    free(str);
     return 0;
 }
