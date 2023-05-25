@@ -1,7 +1,7 @@
 # sudo-grep
 
 ```shell
-sudo-grep [OPTION]... PATTERNS [FILE]...
+sudo-grep [OPTION]... PATTERN [FILE]...
 ```
 
 ## Options

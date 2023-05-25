@@ -90,8 +90,14 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            char line[1000];
-            while (fgets(line, sizeof(line), file) != NULL) {
+            errno = 0;
+            char *line = NULL;
+            size_t n = 0;
+            while (getline(&line, &n, file) != -1) {
+                if (errno != 0) {
+                    fprintf(stderr, "Error: %s\n", strerror(errno));
+                    break;
+                }
                 print_line_with_word(word, line, is_tty);
             }
             fclose(file);
