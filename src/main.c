@@ -66,6 +66,7 @@ int grep_file(const char *word, FILE *file) {
         }
         print_line_with_word(word, line, is_tty);
     }
+    free(line);
     return 0;
 }
 
@@ -105,6 +106,7 @@ int main(int argc, char *argv[]) {
             }
 
             grep_file(word, file);
+            fclose(file);
         }
     } else {
         grep_file(word, stdin);
