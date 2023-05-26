@@ -10,6 +10,7 @@ The following options are available for `sudo-grep`:
 
 - `-i` / `--ignore-case`: Ignore case in pattern and input data.
 - `-v` / `--invert-match`: Invert the sense of matching, to select non-matching lines.
+- `-R` / `--recursive`: Read all files under each directory, recursively.
 
 ## Building
 

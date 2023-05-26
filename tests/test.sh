@@ -19,7 +19,7 @@ do
 
     cat tests/texts/text1.txt | 
     $SUDO_GREP "${args[@]}" | 
-    diff -bq tests/$i.out - && 
+    diff -b --strip-trailing-cr tests/$i.out - && 
     echo -e "\e[32m✓ OK\e[0m" || 
     echo -e "\e[31m✕ ERROR\e[0m"
 done
