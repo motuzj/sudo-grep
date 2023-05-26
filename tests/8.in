@@ -1,0 +1,2 @@
+search two words in multiple files
+"a erat" tests/texts/text1.txt tests/texts/text2.txt tests/texts/text3.txt tests/texts/text4.txt

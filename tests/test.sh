@@ -17,7 +17,7 @@ do
     echo -en "\nRunning test $i. $(head -1 tests/$i.in)...\t"
     eval args=("$(sed -n '2p' tests/$i.in)")
 
-    cat tests/text.txt | 
+    cat tests/texts/text1.txt | 
     $SUDO_GREP "${args[@]}" | 
     diff -bq tests/$i.out - && 
     echo -e "\e[32m✓ OK\e[0m" || 

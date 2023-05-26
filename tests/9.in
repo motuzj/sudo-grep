@@ -1,0 +1,2 @@
+search word in multiple files  + ignore case + invert match
+-v --ignore-case "a" tests/texts/text1.txt tests/texts/text2.txt tests/texts/text3.txt tests/texts/text4.txt
