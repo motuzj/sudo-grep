@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <getopt.h>
 #include <stdbool.h>
@@ -11,9 +12,12 @@
 // options
 bool ignore_case = false;
 bool invert_match = false;
+bool recursive = false;
+
+bool is_directory = false;
 
 // prints only lines that contain "word"
-int print_line_with_word(const char *word, const char *line, int is_tty) {
+int print_line_with_word(const char *word, const char *line, int is_tty, const char *filename) {
     int found_cnt = 0;
     const char *search_start = line; // storing pointer to "word"
     while (search_start && *search_start) {
@@ -26,6 +30,11 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
 
         if (found_word && !invert_match) {
             found_cnt++;
+
+            if (is_tty && is_directory && found_cnt == 1 && filename != NULL) { // print file name
+                printf("\033[31m%s\033[35m:\033[0m", filename);
+            }
+
             for (; search_start < found_word; search_start++) {
                 printf("%c", *search_start);
             }
@@ -53,7 +62,7 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
     return 0;
 }
 
-int grep_file(const char *word, FILE *file, int is_tty) {
+int grep_file(const char *word, FILE *file, int is_tty, const char *filename) {
     char *line = NULL;
     size_t n = 0;
     errno = 0;
@@ -63,28 +72,67 @@ int grep_file(const char *word, FILE *file, int is_tty) {
             fprintf(stderr, "Error: %s\n", strerror(errno));
             break;
         }
-        print_line_with_word(word, line, is_tty);
+        print_line_with_word(word, line, is_tty, filename);
     }
     free(line);
     return 0;
 }
 
+int grep_directory(const char *word, const char *directory, int is_tty) {
+    DIR *dir = opendir(directory);
+    if (dir == NULL) {
+        fprintf(stderr, "Error: %s: Directory can't be opened\n", directory);
+        return 1;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        is_directory = true;
+        if (entry->d_type == DT_REG) { // regular file
+            char path[PATH_MAX];
+            snprintf(path, sizeof(path), "%s/%s", directory, entry->d_name);
+            FILE *file = fopen(path, "r");
+            if (file == NULL) {
+                fprintf(stderr, "Error: %s: File can't be opened\n", path);
+                continue;
+            }
+
+            grep_file(word, file, is_tty, path);
+            fclose(file);
+        } else if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) { // folder
+            char path[PATH_MAX];
+            snprintf(path, sizeof(path), "%s/%s", directory, entry->d_name);
+            grep_directory(word, path, is_tty);
+        }
+    }
+
+    closedir(dir);
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     int is_tty = isatty(STDOUT_FILENO);
+    bool print_filenames = false;
+
     // clang-format off
     struct option long_options[] = {
         {"invert-match", no_argument, 0, 'v'}, 
-        {"ignore-case", no_argument, 0, 'i'}
+        {"ignore-case", no_argument, 0, 'i'},
+        {"recursive", no_argument, 0, 'R'}
     };
     // clang-format on
     int opt;
-    while ((opt = getopt_long(argc, argv, "iv", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "ivR", long_options, NULL)) != -1) {
         switch (opt) {
             case 'i':
                 ignore_case = true;
                 break;
             case 'v':
                 invert_match = true;
+                break;
+            case 'R':
+                recursive = true;
+                break;
         }
     }
 
@@ -96,20 +144,24 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // read from files provided in arguments
+    // read from files or directories provided in arguments
     if (argv[optind + 1] != NULL) {
         for (int i = optind + 1; argv[i] != NULL; i++) {
-            FILE *file = fopen(argv[i], "r");
-            if (file == NULL) {
-                fprintf(stderr, "Error: %s: File can't be opened\n", argv[i]);
-                continue;
-            }
+            if (recursive) {
+                grep_directory(word, argv[i], is_tty);
+            } else {
+                FILE *file = fopen(argv[i], "r");
+                if (file == NULL) {
+                    fprintf(stderr, "Error: %s: File can't be opened\n", argv[i]);
+                    continue;
+                }
 
-            grep_file(word, file, is_tty);
-            fclose(file);
+                grep_file(word, file, is_tty, NULL);
+                fclose(file);
+            }
         }
     } else {
-        grep_file(word, stdin, is_tty);
+        grep_file(word, stdin, is_tty, NULL);
     }
     return 0;
 }
