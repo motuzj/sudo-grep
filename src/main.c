@@ -53,8 +53,7 @@ int print_line_with_word(const char *word, const char *line, int is_tty) {
     return 0;
 }
 
-int grep_file(const char *word, FILE *file) {
-    int is_tty = isatty(STDOUT_FILENO);
+int grep_file(const char *word, FILE *file, int is_tty) {
     char *line = NULL;
     size_t n = 0;
     errno = 0;
@@ -71,6 +70,7 @@ int grep_file(const char *word, FILE *file) {
 }
 
 int main(int argc, char *argv[]) {
+    int is_tty = isatty(STDOUT_FILENO);
     // clang-format off
     struct option long_options[] = {
         {"invert-match", no_argument, 0, 'v'}, 
@@ -105,11 +105,11 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            grep_file(word, file);
+            grep_file(word, file, is_tty);
             fclose(file);
         }
     } else {
-        grep_file(word, stdin);
+        grep_file(word, stdin, is_tty);
     }
     return 0;
 }
