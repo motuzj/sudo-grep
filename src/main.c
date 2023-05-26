@@ -31,8 +31,12 @@ int print_line_with_word(const char *word, const char *line, int is_tty, const c
         if (found_word && !invert_match) {
             found_cnt++;
 
-            if (is_tty && is_directory && found_cnt == 1 && filename != NULL) { // print file name
-                printf("\033[31m%s\033[35m:\033[0m", filename);
+            if (is_directory && found_cnt == 1 && filename != NULL) { // print file name
+                if (is_tty) {
+                    printf("\033[31m%s\033[35m:\033[0m", filename);
+                } else {
+                    printf("%s:", filename);
+                }
             }
 
             for (; search_start < found_word; search_start++) {
